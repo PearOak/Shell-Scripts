@@ -1,32 +1,53 @@
 #!/bin/bash
 
-#Este programa tem como objetivo automatizar os downloads de ebooks gratuitos da editora Springer, disponibilizados durante a pandemia de Covid-19
-#Pelo fato de eu ter me interessado por vários livros de vários assuntos, achei melhor fazer download de todos e remover aqueles que não me interessavam.
-#Obs: Muito provavelmente eles não estarão disponibilizados para sempre, então, pode ser que este script se torne inútil futuramente
-#A idéia é praticar o webscraping, em que o programador se utiliza do código HTML de uma página e consegue obter informações específicas dela, como tabelas, fotos, entre outras
+#Create and access the directory "Books"
+mkdir Books
+cd Books
 
-mkdir Livros #Cria diretório livros
-cd Livros #Vai para diretório livros
-wget -O livros.pdf "https://nocaute.blog.br/wp-content/uploads/2020/04/Springer-Ebooks.pdf.pdf" #Baixando PDF com as listas dos livros
-pdftotext livros.pdf #Converte pdf para txt
-cat livros.txt | grep http > lista.txt #Cria arquivo novo com o URL de todos os livros
-sed -zi 's/\n/ /g' lista.txt #Substitui quebras de linha por espaços
-LIVROS=($(cat lista.txt)) #Cria array com cada um dos links
-CONT=0 #Contador que passa por todos os livros
-echo "${#LIVROS[@]}" #Exibe tamanho da array (apenas para verificar se deu certo)
+#Download one of the pages in order to count the pages
+wget -O "num_pages.html" "https://link.springer.com/search/page/1?facet-content-type=%22Book%22&package=mat-covid19_textbooks"
 
-while [[ $CONT -lt ${#LIVROS[@]} ]]; do #Looping que percorre cada livro da lista
-	wget -O "livro${CONT}.html" "${LIVROS[${CONT}]}" #Baixa conteúdo da pag html e a nomeia de livro<num>.htmk
-	TITULO=$(sed -n '/book-title/{n;p}' "livro${CONT}.html" | sed 's/  \+//g' | grep -o -P '(?<=h1>).*(?=h1)' | sed 's/<\///g')
-#Linha de cima: busca no HTML, a tag referente ao titulo do livro e printa o que está embaixo dela, tira espaços extras, remove tag parcialmente, termina de remover as tags. Td isso respectivamente. Por fim, joga todo esse procedimento numa variável
-	echo $TITULO #Print para testar se var deu certo
-	cat "livro${CONT}.html" | grep "Download this book" > link_sem_filtro.txt
-#Linha de cima: busca no HTML do grupo a tag referente à localização do botão de download da Springer e passa output para um arquivo chama link_sem_filtro.txt
-	CAMINHO=$(grep -o -P '(?<=href=").*(?=" target)' link_sem_filtro.txt) #Printa apenas o caminho, que está entre 'href="' e '" target' no sistema e atribui à uma variável caminho
-	wget -O "${TITULO}.pdf" "https://link.springer.com${CAMINHO}" #Tendo caminho e título, baixa o livro e nomeia o arquivo baixado como titulo.pdf
-	CONT=$[ CONT + 1 ] #Contador para passar de livro por livro
-	rm *html #Remove os HTMLs gerados durante o looping
+#Scrap the downloaded page to obtain the number of all free ebooks available
+TOTAL_BOOKS=$(sed -n '/number-of-search-results/{n;p}' "num_pages.html" | sed 's/  \+//g' | grep -oP '(?<=strong>).*(?=strong)' | sed 's/<\///g')
+#Number to run all pages
+CURRENT_PAGE=1
+#Counting how many books per page
+BPP=$(cat "num_pages.html" | grep 'class="title"' | sed 's/  \+//g' | grep -oP '(?<=href=").*(?=" title)' | sed 's/\/book/https\:\/\/link\.springer\.com/g' | grep -c http)
+echo $BPP
+
+#Conditional that will assure that all pages will be accessed. If the remaider of the division is zero, then number os pages = all_books/10
+if [[ $[ $TOTAL_BOOKS % $BPP ] -eq 0 ]];then
+	MAX_PAGE=$[ $TOTAL_BOOKS / $BPP ]
+else #If remaider isn't zero, then, probably, there'll be an extra page, then, pages = (all_books/10) + 1
+	MAX_PAGE=$[ $[ $TOTAL_BOOKS / $BPP ] + 1 ]
+fi
+
+#Loop that will obtain all URLs and store them in a text file. Also it's worth noting that all pages will be accessed and scraped for the URLs
+while [[ $CURRENT_PAGE -le $MAX_PAGE ]]; do
+	wget -O "books(${CURRENT_PAGE}).html" "https://link.springer.com/search/page/${CURRENT_PAGE}?facet-content-type=%22Book%22&package=mat-covid19_textbooks"
+	cat "books(${CURRENT_PAGE}).html" | grep 'class="title"' | sed 's/  \+//g' | grep -oP '(?<=href=").*(?=" title)' | sed 's/\/book/https\:\/\/link\.springer\.com/g' >> books.txt
+	CURRENT_PAGE=$[ $CURRENT_PAGE + 1 ]
 done
 
-rm livros.* #Remove os arquivos que começam com o nome livros
-rm *.txt #Remove todos os txts
+#Array that will receive all the URLs stored in the text file
+URL=($(cat books.txt | sed -z 's/\n/ /g'))
+#Index that will run all the array elements
+INDEX=0
+
+while [[ $INDEX -lt $[ ${#URL[@]} - 1 ] ]]; do
+
+#Downloading the book download pages
+	wget -O "book${INDEX}.html" "${URL[${INDEX}]}"
+#Scraping pages for obtaining and handling all URLs for downloading
+	DL_URL=$(cat "book${INDEX}.html" | grep -m 1 "Download this book in PDF" | grep -oP '(?<=href=").*(?=" title)' | sed 's/\/content/https\:\/\/link\.springer\.com\/content/g')
+#Scraping pages for obtaining all the book titles
+	TITULO=$(sed -n '/book-title/{n;p}' "book${INDEX}.html" | sed 's/  \+//g' | grep -oP '(?<=h1>).*(?=h1>)' | sed 's/<\///g')
+#Downloading all pages
+	wget -O "${TITULO}.pdf" "${DL_URL}"
+	INDEX=$[ $INDEX + 1 ]
+	echo ""
+done
+
+#Cleaning all temporary files
+rm *html
+rm *txt
