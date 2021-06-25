@@ -3,7 +3,7 @@
 #Create and access the directory "Books"
 mkdir Books
 cd Books
-
+#Comentario aleatório
 #Download one of the pages in order to count the pages
 wget -O "num_pages.html" "https://link.springer.com/search/page/1?facet-content-type=%22Book%22&package=mat-covid19_textbooks"
 
