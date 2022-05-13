@@ -1,0 +1,563 @@
+#####	1 - Tutorial do learnshell.org	#####
+
+###	1: Hello World	###
+
+#Será utilizado o Bourne Again Shell (bash) como o interpretador Shell principal.
+#Programação Shell utiliza outros tipos como o sh, csh, tcsh e possuem diferenças
+#Programação Shell pode ser feita, executando comandos shell no Prompt (no caso o Terminal) ou armazenando uma série de comandos
+#Em um arquivo de extensão Própria.
+
+#Para funcionar, no entanto, deve-se alterar as permissões de execução do arquivo (chmod resolve isso!)
+
+#A primeira linha de um arquivo começa com um "sha-bang" (#!), que não é um comentário (#). Além disso, deve-se colocar o
+#Caminho do interpretador shell.
+
+#Para descobrir qual o shell ativo, deve-se usar o comando ps | grep $$
+#Saída  1617 pts/0    00:00:00 bash
+#Para descobrir AONDE o shell ativo está, utiliza-se o comando (which bash)
+#Saída:/bin/bash
+
+#Para executar um script shell, deve-se utilizar ./script.sh
+
+###	2: Variáveis	###
+
+#Variáveis em shell são criadas a partir do momento que se atribui valores para ela.
+#Podem conter números, caractéres ou uma série de caractéres (strings)
+
+#Variáveis são case sensitivas e, normalmente, são uma combinação de letras e underscore "_".
+#A atribuição de valor é definida pelo símbolo de igual após o nome da variável (obs: Sem espaços, pois isso tem outro significado)
+
+#Exemplo:
+#PRECO_POR_MACA=5 > número
+#UmaParteQualquer=ABC > string
+#saudacao="Hello World!" > string com espaço
+
+##	Referenciando variáveis	##
+
+#Backslash "\" é usado para contornar caracteres especiais que possuem
+#Significado específico:
+
+#Exemplo:
+
+#PRECO_POR_MACA=5
+#echo "O preço da maçã hoje é: R\$ $PRECO_POR_MACA"
+
+#$, neste caso, acaba sendo para printar variável e tals
+
+#Pode-se encapsular o nome de uma variável por meio das chaves "${}" para evitar problemas.
+#Lembrando que as variáveis são case sensitivas, caso não haja uma variável
+#sem encapsulamento, o shell pode interpretar como outra variável
+
+#Encapsular uma variável entre aspas ("" ou ''), preservará os espaços de uma string
+
+#Ex:
+#greeting="Hello		World!"
+#echo $greeting "Agora com espaços: $greeting"
+
+#Variáveis podem receber output de outros comandos. Esta abordagem
+#Se chama substituição, que pode ser feita encapsulando o comando
+#Com "``" (backticks) ou "$()"
+
+#Ex:
+#LISTA=`ls`
+#FileWithTimeStamp=/tmp/my-dir/file_$(/bin/date +%Y-%m-%d).txt
+
+###	3: Passando Argumentos para o Script	###
+
+#Argumentos podem ser passados ao script quando são executados escrevendo eles depois de um espaço
+#Além disso, os argumentos podem ser armazenados em variáveis
+#$1 = primeiro argumento
+#$2 = segundo argumento
+#...
+#$0 = script atual
+
+###	4: Arrays	###
+
+#Arrays são variáveis que podem armazenar valores valores dentro de si
+#Uma array pode ser inicializada por meio de delimitações com espaços dentro de parênteses ("()")
+#Ex:
+#meu_array=(maçã "cesta de frutas" laranja banana)
+
+#Membros de array não precisam ser contínuos ou consecutivos. Alguns membros podem não ser inicializados
+#O número total de elementos pode ser exibido por ${#array[@]}
+#Ex:
+#echo ${#array_qualquer[@]}
+
+#Os elementos de uma array podem ser acessados por meio do seu índice numérico. (Lembrando que começa no 0 ao invés do 1)
+#Ex:
+#array_qualquer=(1 2 3 4 5 6 7 8 9 10)
+#echo ${array_qualquer[5]}
+#
+#array_qualquer[4]=11
+#echo ${#array_qualquer[@]}
+#echo ${array_qualquer[${#array_qualquer[@]}-1]}
+
+
+### 5: Operadores Básicos	###
+
+#Operadores Aritméticos
+#Operações aritméticas em variáveis podem ser feitas seguindo o seguinte padrão:
+#$((expressão))
+
+#Ex:
+#A=3
+#B=$((100 * $A + 5))
+
+#Os operadores básicos são
+
+#a + b -> adição
+#a - b -> subtração
+#a * b -> multiplicação
+#a / b -> divisão (inteiro)
+#a % b -> modulo (resto inteiro da divisão de a por b)
+#a ** b -> potenciação (a elevado a b)
+
+### 6: Operações com Strings	###
+
+#O Shell permite realizar uma bucetada de operações com strings, que podem ser bem úteis para a escrita de scripts
+
+#Tamanho da string ( $# ou ${#blabla})
+#string="Issaquê é uma fodendo string!"
+#echo ${#string}
+
+#Índice
+#É possível achar a posição numérica de qualquer caractér um uma substring que é compatível. Para isso, o comando expr é usado:
+#string="Isso é uma string"
+#substring="sag"
+#expr index "$string" "$substring"
+
+#Extração de Substring
+
+#Pode-se extrair uma substring de uma string inteira, indicando-se a posição e qual a largura desta. Deve-se atentar que a posição inicial é 0 ao invés de 1:
+
+#Ex:
+#string="isso é uma stringer!"
+#pos=11
+#tam=16
+#echo ${string:$pos:$tam}
+
+#Se o tam for omitida, a extração da substring ocorrerá da posição até o fim da linha
+
+#Exemplo de extração de dados:
+
+#CÓDIGO QUE EXTRAI O PRIMEIRO NOME DE ALGUÉM
+#DATARECORD="last=Clifford,first=Johnny Boy,state=CA"
+#COMMA1=`expr index "$DATARECORD" ','`  # 14 position of first comma
+#CHOP1FIELD=${DATARECORD:$COMMA1}       #
+#COMMA2=`expr index "$CHOP1FIELD" ','`
+#LENGTH=`expr $COMMA2 - 6 - 1`
+#FIRSTNAME=${CHOP1FIELD:6:$LENGTH}      # Johnny Boy
+#echo $FIRSTNAME
+
+#Substituição de String
+
+#A) apenas primeira ocorrência
+#string="ser ou não ser?"
+#echo ${string[@]/ser/comer}
+
+#B) todas as ocorrências
+#string="ser ou não ser?"
+#echo ${string[@]//ser/comer}
+
+#C) Deletar todas as ocorrências (substituir por strings vazias)
+#string="ser ou não ser?"
+#echo ${string[@]/ser/}
+
+#D) Substituir ocorrencia da string se está no começo
+#string="ser ou não ser?"
+#echo ${string[@]/#ser/comer agora}
+
+#E) Substituir ocorrencia da string se estiver no fim
+#string="ser ou não ser?"
+#echo ${string[@]/%ser/comer}
+
+#F) Substituir ocorrencia da string com comando shell
+#string="ser ou não ser?"
+#echo ${string[@]/%ser/ser on $(ls)}
+
+
+
+###	7: Fazendo decisões (Estruturas de Decisão)	###
+
+#Assim como nas outras linguagens de programação. Shell tbm tem suporte para estruturas de decisão.
+
+#A estrutura básica de uma estrutura de decisão é:
+
+#if [ "$var" = condição]; then
+#	função
+#fi > fim
+
+#name = "Wellington"
+#if [ "$name" = "Wellington" ]; then > obs: then não pode estar em outra linha!
+#	echo "Verdadeiro - Meu nome é mesmo Wellington!"
+#fi > indica fim da estrutura de decisão
+
+#Como toda estrutura, ela pode ter um senão
+
+#if [ "$name" = "João" ]; then
+#	echo "Opa, sou eu mesmo!"
+#else
+#	echo "Tu me confundiu, parça!"
+#fi
+
+#Pode-se também usar else-if (escrito como elif)
+
+#if [ "$name" = "Wellington" ]; then
+#	echo "Wellington Carvalho"
+#elif [ "$name" = "Willian" ]; then
+#	echo "Willian Carvalho"
+#else
+#	echo "Só sobrou o Luise!"
+#fi 
+
+#A expressão é usada para dizer se algo é verdadeiro ou falso
+#A expressão pode ser uma string ou variável.
+#Uma string vazia ou string que possui espaços ou variáveis de nome indefinido são falsas
+#A expressão pode ser uma combinação de comparações, que são definidas por:
+# ! = negação
+# && = e (conjunto)
+# || = ou (disjunto)
+
+#Expressões condicionais são cercadas por colchetes duplos ("[[ ]]")
+
+#Comparações de tipos numéricos
+
+#comparação		Será vendareira quando
+#$a -lt $b		$a < $b
+#$a -gt $b		$a > $b
+#$a -le $b		$a <= $b
+#$a -ge $b		$a >= $b
+#$a -eq $b		$a é igual a $b
+#$a -ne $b		$a não é igual a $b
+
+#Tipos de comparações de strings
+
+#Comparações		Serão Verdadeiras Quando
+#"$a" = "$b"		$a é o mesmo que $b
+#"$a" == "$b"		$a é o mesmo que $b
+#"$a" != "$b"		$a é diferente de $b
+#-z "$a"		$a é vazio
+
+#Obs: O espaço entre "=" é necessário
+#Obs2: O uso de "" nas string evita caracteres especias de shell (ex: *)
+
+#Combinações lógicas
+
+#if <a href='/en/_%24VAR_A_-eq_1_%26%26_%28%24VAR_B_%3D_%22bee%22_'>| $VAR_T = "tee") </a> ; then
+#    command...
+#fi
+
+#Há também a estrutura case
+
+#case "$variável" in
+#	"$condição1" )
+#		comando...
+#	;;
+#	"$condição2" )
+#		comando...
+#	;;
+#esac > indica fim do case
+
+#Exemplo:
+
+#mycase=1
+#case $mycase in
+#	1) echo "Bash";;
+#	2) echo "PHP";;
+#	3) echo "Python";;
+#	4) echo "C++";;
+#	5) exit
+#esac
+
+#Exercício:
+
+#!/bin/bash
+# change these variables
+#NUMBER=10
+#APPLES=12
+#KING=GEORGE
+# modify above variables
+# to make all decisions below TRUE
+#if [ $NUMBER -gt 15 ] ; then
+#  echo 1
+#fi
+#if [ $NUMBER -eq $APPLES ] ; then
+#  echo 2
+#fi
+#if [[ ($APPLES -eq 12) || ("$KING" = "LUIS") ]] ; then
+#  echo 3
+#fi
+#if [[ $(($NUMBER + $APPLES)) -le 32 ]] ; then
+#  echo 4
+#fi
+
+Exemplo:
+#!/bin/bash
+# change these variables
+#numero=10
+#maca=5
+#rei="Arthur"
+# modify above variables
+# to make all decisions below TRUE
+
+#if [ $numero -le 10 ]; then
+#	echo "True"
+#else
+#	echo "False"
+#fi
+#
+#if [[ $maca -ne $numero || $numero -eq 10 ]]; then
+#	echo "True"
+#else
+#	echo "False"
+#fi
+#
+#if [[ $(($maca + $numero)) -gt 12 && "$king"="Arthur" ]]; then
+#	echo "True"
+#else
+#	echo "False"
+#fi
+
+###	8: Loops/Repetição	###
+
+#Loop For
+
+#Segue a seguinte estrutura:
+
+#for arg in [list]
+#do
+# command(s)...
+#done
+
+#No for, Para cada passagem pelo loop, o valor arg acaba tendo valor sucessivo na lista e o commando vai ser executado
+
+#nomes=("Luis Roberto" "Dirce" "Willian" "Lilian" "Wellington")
+
+#for N in ${nomes[@]} ; do
+#	echo "Meu nome é $N\!"
+#done
+
+#Output de um comando shell
+#for f in $( ls prog.sh /etc/localtime ) ; do
+#  echo "File is: $f"
+#done
+
+#Loop While
+
+#Estrutura básica:
+
+#while [ condition ]
+#do
+# command(s)...
+#done
+
+#While faz testes para uma condição e, se esta for verdadeira, executará o comando. O loop acontecerá enquando a condição for verdadeira
+
+#COUNT=4
+#while [ $COUNT -gt 0 ]; do
+#	echo "O valor dessa porra é: $COUNT"
+#	COUNT = $(($COUNT - 1))
+#done
+
+#Loop Until
+
+#Estrutura básica:
+
+#until [ condition ]
+#do
+# command(s)...
+#done
+
+#Until faz testes para uma condição e, enquanto for FALSA, executa os comandos. O loop acontece enquanto condição for falsa (oposto de while, que executa enquanto for verdadeira)
+
+COUNT=1
+
+#until [ $COUNT -gt 5 ]; do
+#	echo "O valor da contagem é: $COUNT"
+#	COUNT=$(($COUNT + 1))
+#done
+
+#Parâmetros Break e Continue
+
+#Break e Continue podem ser usados para controlar a execução dos loops (for, while, until).
+#Continue é usado para pular o resto de uma parte do loop. Enquanto o break pula o resto do loop:
+
+#Exemplos
+
+#COUNT=10
+#while [ $COUNT -ge 0 ]; do
+#	echo "Valor da contagem é: $COUNT"
+#	COUNT=$(($COUNT - 1))
+#	if [ $COUNT -eq 4]; then
+#		break
+#	fi
+#done
+
+#COUNT=0
+#while [ $COUNT -lt 10]; do
+#	COUNT=$((COUNT + 1))
+
+#	if [ $(($COUNT % 2)) = 0 ]; then
+#		continue
+#	fi
+#	echo $COUNT
+#done
+
+#Exercicio:
+
+#NUMBERS=(951 402 984 651 360 69 408 319 601 485 980 507 725 547 544 615 83 165 141 501 263 617 865 575 219 390 237 412 566 826 248 866 950 626 949 687 217 815 67 104 58 512 24 892 894 767 553 81 379 843 831 445 742 717 958 609 842 451 688 753 854 685 93 857 440 380 126 721 328 753 470 743 527)
+
+# write your code here
+
+#for N in ${NUMBERS[@]}; do
+#	if [ $(($N % 2)) = 0 ]; then
+#	echo $N
+#    fi
+    
+#    if [ $N -eq 237 ]; then
+#	break
+#    fi
+#done
+
+###	9: Funções em Shell	###
+
+#Assim como outras linguagens de programação, Shell possui funções.
+#Funções são subrotinas que implementam uma série de comandos e operações, que acaba sendo útil para tarefas repetidas
+
+#Estrutura básica
+
+#nome_funcao {
+#	comando(s)...
+#}
+
+#Funções são chamados simplesmente escolhendo os nomes delas.
+#Função é o equivalente de um comando.
+#Parâmetros podem ser passados para uma função escrevendo eles após o nome da função. 
+
+#Exemplo:
+
+#function nome_a {
+#	echo "Função A."
+#}
+
+#function nome_b {
+#	echo "$1"
+#}
+
+#function somador {
+#	echo "$(($1 + $2))"
+#}
+
+
+#nome_a "Função A"
+#nome_b
+#somador 12 56
+
+###	10: Variáveis Especiais	###
+
+#No tutorial de funções, utilizou-se um parâmetro como $1. Neste tutorial, será citado vários outros
+
+#$0 = O nome de arquivo do script atual (ex: output seria tutorial.sh, caso fosse um shell)
+#sn = O n-ésimo argumento passado ao script foi chamado ou função foi chamada
+#$# = O número do argumento passo para o script ou função
+#$@ ou $* = Todos os argumentos passados ao script ou função
+#$? = O status de saída do último comando executado
+#$$ = O PID (Process ID) do shell atual. Para shell scripts, esse é o PID o qual eles estão sendo executados
+#$! = O PID do último comando em segundo plano
+
+
+###	11: Bash Trap Command	###
+
+# É comum dar de cara com situações em que se deseja capturar um sinal especial/interrupção/input de usuário no seu script, para se previnir contra os imprevisíveis.
+#Comando trap é o que vai ajudar:
+
+#Exemplo:
+
+#trap <argumento/function> <signal>
+
+#Exemplo de script
+
+#!/bin/bash
+
+#trap "echo Booh!" SIGINT SIGTERM
+#echo "Vai rodar até que vc aperte Ctrl+Z, arrombado!"
+#echo "aperta Ctrl+C pra se fuder!"
+
+#while true:
+#do
+#	sleep 60
+#done
+
+#Pode-se também substituir o "echo Booh!" por uma função e chamar numa trap
+
+#function booh {
+#	echo "booh!"
+#}
+
+#trap booh SIGINT SIGTERM
+
+#Alguns dos tipos de sinal que podem ser pegos são
+
+#SIGINT = Usuário manda um sinal de interrupção (Ctrl + C)
+#SIGQUIT = Usuário manda um sinal de saída (Ctrl + C)
+#SIGFPE = Foi tentado uma operação ilegal de matemática
+
+#Os outros sinais podem ser vistos no comando "kill -l"
+#NÃO ESQUECE, CARALHO! "kill -l" e "man kill"
+
+#Os sinais podem ser expressos como números, o que substitui string grandes no trap
+
+#Ex:
+#trap booh 2 15 #2 corresponde à SIGINT e 15 para SIGTERM
+
+#Um uso comum do comando trap é a limpeza de arquivos temporários
+
+#Ex:
+#trap "rm -f folder; exit" 2
+
+
+###	12: Teste de Arquivo	###
+
+#É muito comum querer fazer alguns testes no filesystem que você está rodando. Neste caso, shell fornece vários comandos úteis para fazer esses testes
+
+#O comando segue os seguintes padrões
+# 1) -<comando> [arquivo]
+# 2) [arquivo1] -<comando> [arquivo2]
+
+#Segue alguns exemplos mais comuns num dia-a-dia
+
+#1) Testando existência de um arquivo com "-e"
+
+#!/bin/bash
+#nome_arquivo="teste.md"
+#if [ -e "$nome_arquivo" ]; then
+#	echo "$nome_arquivo existe como um arquivo"
+#fi
+
+#2) Testando existência de um diretório com "-d"
+
+#!/bin/bash
+#nome_pasta="teste"
+#if [ -d "$nome_pasta" ]; then
+#	echo "$nome_pasta existe como pasta"
+#fi
+
+#3) Teste de permissão de leitura para o usuário rodando script/teste
+
+#!/bin/bash
+#filename="teste.md"
+#if [ ! -f "$filename" ]; then
+#	touch "$filename"
+#fi
+
+#if [ -r "$filename" ]; then
+#	echo "Você está permitido de ler $filename"
+#else
+#	echo "Você não está permitido de ler $filename"
+#fi
+
+
+###	To be continued!	###
+
+
+#####	2 - Tutorial: shellscript.sh	#####

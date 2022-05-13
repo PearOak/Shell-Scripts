@@ -26,9 +26,9 @@ done
 echo -e "\n\n------------------- CONCLUSION --------------------\n"
 
 if [[ $CONT -eq 2 ]]; then
-	echo "${NUM} is a prime number, since it is divided by ${CONT} numbers!"
+	echo "${NUM} is a prime number, since it is divided by only ${CONT} different numbers!"
 else
-	echo "${NUM} is not a prime number, sice it is divided by ${CONT} numbers!"
+	echo "${NUM} is not a prime number, sice it is divided by ${CONT} different numbers!"
 fi
 
 echo "Done! :D"

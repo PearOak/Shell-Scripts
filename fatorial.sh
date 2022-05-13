@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#Iniciando o script
 echo "Digite o número que se deseja descobrir o fatorial:"
 read NUMERO #Lê o numero que se deseja extrair o fatorial
 FAT=$NUMERO #Será apenas usado no fim

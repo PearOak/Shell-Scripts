@@ -1,0 +1,43 @@
+
+https://www.gnu.org/
+
+https://www.edx.org/school/linuxfoundationx
+
+https://bash.cyberciti.biz/guide/Main_Page
+
+http://www.freeos.com/guides/lsst/
+
+http://www.computerhope.com/unix/used.htm
+
+http://www.tldp.org/LDP/abs/html/index.html
+
+http://www.linuxjournal.com/article/2460
+
+http://www.doc.ic.ac.uk/~wjk/UnixIntro/
+
+http://goalkicker.com/BashBook/
+
+And other shells, suggested by Alma Wilkinson ...
+
+https://doc.lagout.org/operating%20system%20/linux/Commands%20and%20Shell%20Programming/From%20Bash%20to%20Z%20Shell.pdf
+
+http://zsh.sourceforge.net/Guide/zshguide.pdf
+
+And more, suggested by Cody Kitterman ...
+
+Collection of Bash one-liners: http://www.bashoneliners.com/
+
+The Bash Hackers Wiki: http://wiki.bash-hackers.org/start
+
+Google's in-house Shell Style Guide: https://google.github.io/styleguide/shell.xml
+$838* "POSIX™ Standard" (Std 1003.1™-2008, 2016 Edition - ISO/IEC 9945) ― FREE
+
+http://pubs.opengroup.org/onlinepubs/9699919799/
+
+*http://ieeexplore.ieee.org/document/7582338/
+
+Bashisms (i.e. features not defined within the POSIX std)
+http://mywiki.wooledge.org/Bashism
+
+A few useful introductions here: regular expressions, sed, awk, quoting etc. 
+http://www.grymoire.com/Unix/index.html
